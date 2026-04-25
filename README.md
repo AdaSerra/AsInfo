@@ -18,13 +18,13 @@ It using [LMDB](https://github.com/LMDB/lmdb) Database to ensure data persistenc
 
 ### 🛠 Main API exposed (partial)
 
-|  Function    |   Arguments      | CLI                    | Description                                            |
-|--------------|----------------- |------------------------|--------------------------------------------------------|
-| get_as       | AS Number        | .\asinfo <ASN>         | Return (ptr) AS info object(metadata and counters)     |     
-| get_org      | Org Id           | -o <ORG_ID>            | Return (ptr) Org info object(metadata and counters)    |
-| check_rel    | ASN 1, ASN 2, rel| -r, <ASN1> <ASN2> [rel]| Validates if relationship [rel] exists between two ASN |
-| get_as_name  | AS Name          | -n <AUT_NAME>          | Return all AS info objects matching thats AUT_NAME     |
-| is_in_cone   | ASN 1, ASN 2     |                        | Check if ASN 2 is in customer cone of ASN 1            |
+|  Function    |   Arguments      | CLI                   | Description                                            |
+|--------------|----------------- |-----------------------|--------------------------------------------------------|
+| get_as       | AS Number        | .\asinfo ASN          | Return (ptr) AS info object(metadata and counters)     |     
+| get_org      | Org Id           | -o ORG_ID             | Return (ptr) Org info object(metadata and counters)    |
+| check_rel    | ASN 1, ASN 2, rel| -r ASN1 ASN2 [rel]    | Validates if relationship [rel] exists between two ASN |
+| get_as_name  | AS Name          | -n AS_Name            | Return all AS info objects matching thats AUT_NAME     |
+| is_in_cone   | ASN 1, ASN 2     |                       | Check if ASN 2 is in customer cone of ASN 1            |
 
 Mains functions have a light/fast version that check only existence of item and a complete/full version that return item and other items associated in others tables.
 See source files for entire API list.
@@ -53,13 +53,13 @@ A flat array and a more compact data structure (AS and Organization names are st
 
 ##### Requirements
 To compile and bulk correctly the database you need at least "as-org2info.txt" and "as-rel.txt" (relationship serial 1) files. 
-"as-rel2.txt" (serial 2) and "as-rel.v6-stable.txt" (v6 version) files are optional
-Find these files links  https://www.caida.org/catalog/datasets/as-organizations and https://www.caida.org/catalog/datasets/as-relationships/
+  "as-rel2.txt" (serial 2) and "as-rel.v6-stable.txt" (v6 version) files are optional.
+  Find these files links  https://www.caida.org/catalog/datasets/as-organizations and https://www.caida.org/catalog/datasets/as-relationships/
 
 ##### Compile
 Change cmake option BUILD_AS_DLL ON / OFF if you want compile as Dll or Cli stand-alone.
 Setting DELETE_OLD_DB if you want remove existing Database
-On Windows can launch .\build.ps1 with same options.
+  On Windows can launch .\build.ps1 with same options.
 
 ```
 bash
@@ -80,10 +80,10 @@ C++
 AsInfo AsDb{}; 
 
 //First access
-if(!AsDb.build_db()) ...exit;
+if(!AsDb.build_db()) return -1;
 
 //After
-if(!AsDb.open()) ...exit;
+if(!AsDb.open()) return -1;
 
 ```
 
