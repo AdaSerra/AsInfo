@@ -232,12 +232,12 @@ int main(int argc, char* argv[])
             std::vector<AutInfo> r = ldb.get_as_name(argv[2]);
             if (!r.empty())
             {
-                printf("ASes found %llu\n", r.size());
+                printf("ASes found %zu\n\n", r.size());
                 for (const auto& a : r) a.write_aut(stdout);
             }
 
             else
-                printf("As Name not found\n");
+                printf("AS Name not found\n");
             break;
         }
         case Action::CHECK_REL:
@@ -252,7 +252,7 @@ int main(int argc, char* argv[])
             asnc = ldb.get_cone(as_query);
             if (!asnc.empty())
             {
-                printf("Cone for AS%u -  %llu\n", as_query, asnc.size());
+                printf("Cone for AS%u -  %zu\n\n", as_query, asnc.size());
                 for (const auto& a : asnc) printf("%u\n", a);
             }
             else
@@ -278,8 +278,10 @@ int main(int argc, char* argv[])
             {
                 r->write_org(stdout);
                 if (!asv.empty())
-                {
-                    for (const auto& a : asv) a.write_aut(stdout);
+                {   
+                    putchar('\n');
+                    for (const auto& a : asv) 
+                            a.write_aut(stdout);
                 }
                 
             }

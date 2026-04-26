@@ -1,8 +1,10 @@
+#include "asinfo.h"
+
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
 
 #include <chrono>
 #include <iostream>
@@ -11,7 +13,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "asinfo.h"
 #include "const.h"
 #include "ingest.h"
 #include "parstxt.h"
@@ -24,7 +25,7 @@ std::unordered_map<uint32_t, uint64_t> AsInfo::asn_to_idx;
 std::unordered_map<uint32_t, std::vector<uint32_t>> AsInfo::adj_p2c;
 std::unordered_map<uint32_t, std::vector<uint32_t>> AsInfo::adj_cone;
 
-/// @brief AsInfo constructor, init MDB 
+/// @brief AsInfo constructor, init MDB
 /// @return exit programm if init not success with code 1
 AsInfo::AsInfo()
 {
@@ -72,12 +73,12 @@ AsInfo::~AsInfo()
 /// @param create flag to open db in read only mode or not
 /// @return false if not success
 bool AsInfo::open(bool create)
-{   
+{
     int rc;
 
-    if (create) 
+    if (create)
         rc = mdb_env_open(env, DB_FILE, MDB_NOSUBDIR, 0664);
-    else 
+    else
         rc = mdb_env_open(env, DB_FILE, MDB_NOSUBDIR | MDB_RDONLY, 0664);
 
     if (rc)
@@ -86,17 +87,17 @@ bool AsInfo::open(bool create)
         return false;
     }
 
-    if(create) 
+    if (create)
         rc = mdb_txn_begin(env, NULL, 0, &txn);
-    else 
+    else
         rc = mdb_txn_begin(env, NULL, MDB_RDONLY, &txn);
-        
+
     if (rc != MDB_SUCCESS)
     {
         printf("Error mdb_txn_begin rc=%d (%s)\n", rc, mdb_strerror(rc));
         return false;
     }
-   
+
     if (mdb_dbi_open(txn, TABLE_ORG, MDB_CREATE, &org_info) ||
         mdb_dbi_open(txn, TABLE_AUT, MDB_CREATE | MDB_INTEGERKEY, &aut_info) ||
         mdb_dbi_open(txn, TABLE_ORG_ASN, MDB_CREATE | MDB_DUPSORT, &org_to_asn) ||
@@ -111,7 +112,7 @@ bool AsInfo::open(bool create)
     return true /* safe_txn.commit() */;
 }
 
-/// @brief Opes MDB database in reading mode, tables, and init txn pointer 
+/// @brief Opes MDB database in reading mode, tables, and init txn pointer
 /// @return false if not success
 /* bool AsInfo::open()
 {
@@ -160,7 +161,8 @@ bool AsInfo::build_db()
     return true;
 }
 
-/// @brief Load Caida files and call parsing functions to extract data in static containers of the struct. 
+/// @brief Load Caida files and call parsing functions to extract data in static containers of the
+/// struct.
 /// @return false if not success
 bool AsInfo::load_files()
 {
@@ -252,11 +254,12 @@ bool AsInfo::load_files()
     else
     {
         printf(
-            "Warning: Impossible open file as-rel2 - serial 2\n Using only as-rel - serial 1 file\n");
+            "Warning: Impossible open file as-rel2 - serial 2\n Using only as-rel - serial 1 "
+            "file\n");
     }
 
     fp = fopen(REL_FILE_V6, "r");
-     
+
     if (fp)
     {
         if (fgets(riga, sizeof(riga), fp) == NULL)
@@ -276,7 +279,8 @@ bool AsInfo::load_files()
     else
     {
         printf(
-            "Warning: Impossible open file as-relv6 file\n Relationship v6 not will inlcude in database");
+            "Warning: Impossible open file as-relv6 file\n Relationship v6 not will inlcude in "
+            "database");
     }
 
     // sorting and decupling as relationship
@@ -302,7 +306,8 @@ bool AsInfo::load_files()
         return false;
 }
 
-/// @brief Process data extract from Caida files calling functions to ingest, finally sort AutIinfo vector and single vectors in maps
+/// @brief Process data extract from Caida files calling functions to ingest, finally sort AutIinfo
+/// vector and single vectors in maps
 /// @details Size_t counters are for debugging and optimizing structs, they can be deleted
 void AsInfo::ingest()
 {
@@ -355,15 +360,22 @@ void AsInfo::ingest()
 }
 
 /// @brief Write data in Database
-/// @details - Cycle on OrgInfo vector and for i elem put in org_info table: key org_id (char), data: OrgInfo raw
-///          - Cycle on AutInfo vector and for i elem put in aut_info table: key as number (uint32_t), data AutInfo raw 
-///                                                       in org_to_asn table: key org_id (char), data as number  
-///                                                       in asname_to_asn table: aut_name(char), data as number 
-///          - Cycle on AsRel vector and for i elem put in asn_rel: key (uint64_t) asn1|asn2, data: relationship [-1,0,1]
-///                                                                 inverse key asn2|asn1, data: inverse relationship
-///          - Cycle on adj_p2c and put in asn_p2c table: key asn(uint32_t), data, blob of asn(uint32_t) in associated vector
-///          - Cycle on adj_cone and put in asn_cone table: key asn(uint32_t), data, blob of asn(uint32_t) in associated vector
-/// @return commit transaction return value 
+/// @details - Cycle on OrgInfo vector and for i elem put in org_info table: key org_id (char),
+/// data: OrgInfo raw
+///          - Cycle on AutInfo vector and for i elem put in aut_info table: key as number
+///          (uint32_t), data AutInfo raw
+///                                                       in org_to_asn table: key org_id (char),
+///                                                       data as number in asname_to_asn table:
+///                                                       aut_name(char), data as number
+///          - Cycle on AsRel vector and for i elem put in asn_rel: key (uint64_t) asn1|asn2, data:
+///          relationship [-1,0,1]
+///                                                                 inverse key asn2|asn1, data:
+///                                                                 inverse relationship
+///          - Cycle on adj_p2c and put in asn_p2c table: key asn(uint32_t), data, blob of
+///          asn(uint32_t) in associated vector
+///          - Cycle on adj_cone and put in asn_cone table: key asn(uint32_t), data, blob of
+///          asn(uint32_t) in associated vector
+/// @return commit transaction return value
 bool AsInfo::bulk()
 {
     /*  MdbTxn safe_txn(env, false);
@@ -655,7 +667,7 @@ AutInfo* AsInfo::get_as(uint32_t asn_key)
         AutInfo* res = static_cast<AutInfo*>(data.mv_data);
         if (res) return res;
     }
-    
+
     return nullptr;
 }
 
@@ -756,32 +768,37 @@ OrgInfo* AsInfo::get_org(const char* org_key)
 /// @brief Lookup an org_id in org_info table and join org_id to lookup all as with the same org_id
 /// @param org_key string to use as org_id key
 /// @param asv vector to store all AutInfo objects found
-/// @return return a pointer to OrgInfo struct associated, else nullptr 
+/// @return return a pointer to OrgInfo struct associated, else nullptr
 OrgInfo* AsInfo::get_org_full(const char* org_key, std::vector<AutInfo>& asv)
 {
     MDB_val key, data;
     key.mv_size = strlen(org_key);
     key.mv_data = (void*)org_key;
 
+    
     if (mdb_get(txn, org_info, &key, &data) != 0) return nullptr;
-
     OrgInfo* res = static_cast<OrgInfo*>(data.mv_data);
 
-    MDB_val v_mapping;
-    if (mdb_get(txn, org_to_asn, &key, &v_mapping) == 0)
+    MDB_cursor* m_cur_mapping;
+    if (mdb_cursor_open(txn, org_to_asn, &m_cur_mapping) != 0) return res;
+
+    MDB_val v_asn_id;
+  
+    int rc = mdb_cursor_get(m_cur_mapping, &key, &v_asn_id, MDB_SET);
+
+    while (rc == 0)
     {
-        MDB_val key_asn, data_asn;
-        key_asn.mv_size = sizeof(uint32_t);
-        key_asn.mv_data = v_mapping.mv_data;
-
-        if (!m_cur_aut_info) mdb_cursor_open(txn, aut_info, &m_cur_aut_info);
-
-        if (mdb_cursor_get(m_cur_aut_info, &key_asn, &data_asn, MDB_SET_KEY) == 0)
+        MDB_val data_aut;
+       
+        if (mdb_get(txn, aut_info, &v_asn_id, &data_aut) == 0)
         {
-            asv.push_back(*static_cast<AutInfo*>(data_asn.mv_data));
+            asv.push_back(*static_cast<AutInfo*>(data_aut.mv_data));
         }
+
+        rc = mdb_cursor_get(m_cur_mapping, &key, &v_asn_id, MDB_NEXT_DUP);
     }
 
+    mdb_cursor_close(m_cur_mapping);
     return res;
 }
 
@@ -847,7 +864,8 @@ bool AsInfo::check_as_org(uint32_t asn_key, const char* expected_org_id)
 /// @brief Validates if a specific relationship exists between two ASNs
 /// @param asn1 first AS number
 /// @param asn2 second AS number
-/// @param cr Relationship type to verify, if not given, default value is ANY, so in this case check only if exist any kind of relationship
+/// @param cr Relationship type to verify, if not given, default value is ANY, so in this case check
+/// only if exist any kind of relationship
 /// @return the result compare relationship given as cr and relationship in database
 RelType AsInfo::check_rel(uint32_t asn1, uint32_t asn2, RelType cr)
 {
@@ -867,8 +885,9 @@ RelType AsInfo::check_rel(uint32_t asn1, uint32_t asn2, RelType cr)
     return (cr == actual_rel) ? cr : NOT_REL;
 }
 
-/// @brief Lookup an AS number in asn_cone table and if exists return list of AS in full customer cone (recursive BFS)
-/// @details BFS is precalculated 
+/// @brief Lookup an AS number in asn_cone table and if exists return list of AS in full customer
+/// cone (recursive BFS)
+/// @details BFS is precalculated
 /// @param asn AS number to lookup
 /// @return vector with all AS number of customer cone or an empty vector
 std::vector<uint32_t> AsInfo::get_cone(uint32_t asn)
@@ -911,10 +930,11 @@ std::vector<uint32_t> AsInfo::get_customers(uint32_t asn)
 }
 
 /// @brief Check if an given AS is in customer cone of another AS
-/// @details Takes entire customer cone of the other AS in table asn_cone and performs a binary search on it
+/// @details Takes entire customer cone of the other AS in table asn_cone and performs a binary
+/// search on it
 /// @param root_asn as number owner of cone
 /// @param target_asn as number to check
-/// @return boolean value of that check 
+/// @return boolean value of that check
 bool AsInfo::is_in_cone(uint32_t root_asn, uint32_t target_asn)
 {
     MDB_val key, data;
@@ -927,7 +947,6 @@ bool AsInfo::is_in_cone(uint32_t root_asn, uint32_t target_asn)
         const uint32_t* ptr = static_cast<const uint32_t*>(data.mv_data);
         size_t count = data.mv_size / sizeof(uint32_t);
 
-        
         return std::binary_search(ptr, ptr + count, target_asn);
     }
     return false;
@@ -948,7 +967,6 @@ void AsInfo::benchmark(size_t num_queries)
     std::vector<uint32_t> queries;
     queries.reserve(num_queries);
 
-
     for (size_t i = 0; i < num_queries; ++i) queries.push_back(dist(gen));
 
     std::vector<OrgInfo> tier1_org_vector;
@@ -960,7 +978,7 @@ void AsInfo::benchmark(size_t num_queries)
         if (strlen(oc.org_id) > 1) tier1_org_vector.push_back(oc);
     }
 
-    /// 1 
+    /// 1
     auto start = std::chrono::high_resolution_clock::now();
     size_t found = 0;
 
@@ -976,7 +994,7 @@ void AsInfo::benchmark(size_t num_queries)
     double mlps = (num_queries / diff.count()) / 1000000.0;
     double fpc = (double)found / num_queries * 100;
 
-      printf(
+    printf(
         "\nSIMPLE LOOKUP\n"
         "Speed: %.4f MLPS\n"
         "Average lookup: %.2f us\n"
@@ -1000,15 +1018,14 @@ void AsInfo::benchmark(size_t num_queries)
     mlps = (num_queries / diff.count()) / 1000000.0;
     fpc = (double)found / num_queries * 100;
 
-     printf(
+    printf(
         "\nVALIDATION LOOKUP (Boolean) Best case (asn and org_id in cache)\n"
         "Speed: %.4f MLPS\n"
         "Average lookup: %.2f us\n"
         "Match found %zu %.2f %%\n",
         mlps, ((double)diff.count() * 1000000.0 / num_queries), found, fpc);
 
-
-    ///3 pre
+    /// 3 pre
     std::vector<std::string> all_org_ids;
     for (size_t i = 0; i < 100'000; ++i)
     {
@@ -1045,13 +1062,12 @@ void AsInfo::benchmark(size_t num_queries)
     mlps = (num_queries / diff.count()) / 1000000.0;
     fpc = (double)found / num_queries * 100;
 
-        printf(
+    printf(
         "\nVALIDATION LOOKUP (Boolean) worst case (asn and org_id random)\n"
         "Speed: %.4f MLPS\n"
         "Average lookup: %.2f us\n"
         "Match found %zu %.2f %%\n",
         mlps, ((double)diff.count() * 1000000.0 / num_queries), found, fpc);
-
 
     /// 4
     start = std::chrono::high_resolution_clock::now();
@@ -1131,16 +1147,14 @@ void AsInfo::benchmark(size_t num_queries)
         "Average lookup: %.2f us\n"
         "Match found %zu %.2f %%\n",
         mlps, ((double)diff.count() * 1000000.0 / num_queries), found, fpc);
-    
 }
 
 /// @brief Test key data, key size and data size of every table in database
 void AsInfo::testing_tables()
 {
     MDB_cursor* cur = nullptr;
-    MDB_dbi array_table1[] = {
-        asn_rel, aut_info, asn_p2c, asn_cone, org_info, org_to_asn, asname_to_asn
-    };
+    MDB_dbi array_table1[] = {asn_rel,  aut_info,   asn_p2c,      asn_cone,
+                              org_info, org_to_asn, asname_to_asn};
 
     int rc;
     uint64_t kf64, kl64;
@@ -1163,12 +1177,14 @@ void AsInfo::testing_tables()
         {
             printf("Table %u: cursor_get FIRST rc=%d (%s)\n", i + 1, rc, mdb_strerror(rc));
             mdb_cursor_close(cur);
-            continue; 
+            continue;
         }
 
-        if (i == 0) kf64 = *static_cast<uint64_t*>(key.mv_data);
-        else if (i < 4) kf32 = *static_cast<uint32_t*>(key.mv_data);
-        else 
+        if (i == 0)
+            kf64 = *static_cast<uint64_t*>(key.mv_data);
+        else if (i < 4)
+            kf32 = *static_cast<uint32_t*>(key.mv_data);
+        else
         {
             size_t copy_size = (key.mv_size < 79) ? key.mv_size : 79;
             memcpy(kfchar, key.mv_data, copy_size);
@@ -1184,9 +1200,11 @@ void AsInfo::testing_tables()
             continue;
         }
 
-        if (i == 0) kl64 = *static_cast<uint64_t*>(key.mv_data);
-        else if (i < 4) kl32 = *static_cast<uint32_t*>(key.mv_data);
-        else 
+        if (i == 0)
+            kl64 = *static_cast<uint64_t*>(key.mv_data);
+        else if (i < 4)
+            kl32 = *static_cast<uint32_t*>(key.mv_data);
+        else
         {
             size_t copy_size = (key.mv_size < 79) ? key.mv_size : 79;
             memcpy(klchar, key.mv_data, copy_size);
@@ -1194,46 +1212,50 @@ void AsInfo::testing_tables()
         }
         size_t d2 = data.mv_size;
 
-     
         if (d1 != 0 && d2 != 0)
         {
-            if (i == 0) // As rel table uint64_t
+            if (i == 0)  // As rel table uint64_t
             {
-                printf("Table %u\n"
-                       "First key value: %" PRIu64 "\n"
-                       "First data size: %zu\n"
-                       "Last key value: %llu\n"
-                       "Last data size: %zu\n",
-                       i + 1, kf64, d1, kl64, d2);
+                printf(
+                    "Table %u\n"
+                    "First key value: %" PRIu64
+                    "\n"
+                    "First data size: %zu\n"
+                    "Last key value: %llu\n"
+                    "Last data size: %zu\n",
+                    i + 1, kf64, d1, kl64, d2);
             }
-            else if (i < 4) // table asn uint32_t
+            else if (i < 4)  // table asn uint32_t
             {
-                printf("Table %u\n"
-                       "First key value: %u\n"
-                       "First data size: %zu\n"
-                       "Last key value: %u\n"
-                       "Last data size: %zu\n",
-                       i + 1, kf32, d1, kl32, d2);
+                printf(
+                    "Table %u\n"
+                    "First key value: %u\n"
+                    "First data size: %zu\n"
+                    "Last key value: %u\n"
+                    "Last data size: %zu\n",
+                    i + 1, kf32, d1, kl32, d2);
             }
-            else // table strings (char*)
+            else  // table strings (char*)
             {
-                printf("Table %u\n"
-                       "First key value: %s\n"
-                       "First data size: %zu\n"
-                       "Last key value: %s\n"
-                       "Last data size: %zu\n",
-                       i + 1, kfchar, d1, klchar, d2);
+                printf(
+                    "Table %u\n"
+                    "First key value: %s\n"
+                    "First data size: %zu\n"
+                    "Last key value: %s\n"
+                    "Last data size: %zu\n",
+                    i + 1, kfchar, d1, klchar, d2);
             }
         }
-        else 
+        else
         {
             printf("No data Table: %u\n", i + 1);
         }
 
-        mdb_cursor_close(cur); 
+        mdb_cursor_close(cur);
     }
 }
-/// @brief For a given AS number find corrispective range from IANA AS ranges number allocated for RIRs.
+/// @brief For a given AS number find corrispective range from IANA AS ranges number allocated for
+/// RIRs.
 /// @details It is a fallback if ASN not exists in database
 Region AsInfo::find_rir(uint32_t asn)
 {
@@ -1244,5 +1266,4 @@ Region AsInfo::find_rir(uint32_t asn)
         return it->rir;
     else
         return UNALLOCATED;
-} 
-
+}
