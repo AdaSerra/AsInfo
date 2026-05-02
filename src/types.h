@@ -43,7 +43,7 @@ enum AsType : uint8_t
     CONTENT = 5 // Content Provider
 };
 
-// As ranges number allocated
+// As ranges numbers allocated
 // https://www.iana.org/assignments/as-numbers/as-numbers.xhtml
 // upper limit last update 2026-03-14
 struct AsRange
@@ -112,8 +112,16 @@ struct AsRel
     RelType rel = NOT_REL;
     
     void write_rel(FILE *fout);
+
+    inline bool operator==(const AsRel& other) const
+    {
+    return asn1 == other.asn1 && 
+           asn2 == other.asn2 && 
+           rel  == other.rel;
+    }
 };
 
+//
 inline constexpr AsRange ASN_RANGES[] = {
         {0, Reserved},         {1876, ARIN},          {1901, RIPE_NCC},   {2042, ARIN},
         {2043, RIPE_NCC},      {2046, ARIN},          {2047, RIPE_NCC},   {2106, ARIN},
@@ -137,7 +145,25 @@ inline constexpr AsRange ASN_RANGES[] = {
         {155961, APNIC},       {196607, UNALLOCATED}, {216475, RIPE_NCC}, {262143, UNALLOCATED},
         {275868, LACNIC},      {327679, UNALLOCATED}, {330751, AFRINIC},  {393215, UNALLOCATED},
         {402332, ARIN},        {403556, ARIN},        {404380, ARIN},     {4199999999, UNALLOCATED},
-        {4294967294, PRIVATE}, {4294967295, Reserved}};
+        {4294967294, PRIVATE}, {4294967295, Reserved}
+    };
+
+// AsRel hash
+namespace std {
+    template <>
+    struct hash<AsRel> {
+        size_t operator()(const AsRel& s) const noexcept {
+            size_t h = 0;
+            auto combine = [&](size_t v) {
+                h ^= v + 0x9e3779b9 + (h << 6) + (h >> 2);
+            };
+            combine(std::hash<uint32_t>{}(s.asn1));
+            combine(std::hash<uint32_t>{}(s.asn2));
+            combine(std::hash<int8_t>{}(static_cast<int8_t>(s.rel)));
+            return h;
+        }
+    };
+}
 
 /* 
 struct AsStats

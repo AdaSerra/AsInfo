@@ -4,6 +4,7 @@ project(AsInfo VERSION 1.0 LANGUAGES C CXX)
 # --- Build options ---
 option(BUILD_AS_DLL "Compile as DLL (shared library)" OFF)
 option(DELETE_OLD_DB "Delete old database during setup" OFF)
+option(CHECK_DATE "Check the dates of the latest available caida files" ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,8 +15,25 @@ if(NOT EXISTS "${DATA_DIR}")
     file(MAKE_DIRECTORY "${DATA_DIR}")
 endif()
 
-# Date string (Format yyyyMM01)
-string(TIMESTAMP CURRENT_DATE "%Y%m01")
+# Check datasets dates
+if(NOT CHECK_DATE)
+    
+    # check file exist
+    file(GLOB FILES_FOUND RELATIVE "${DATA_DIR}" "${DATA_DIR}/*.as-org2info.txt")
+
+    # find first date prefix and use it as prefix for all files
+    if(FILES_FOUND)
+        list(GET FILES_FOUND 0 FIRST_FILE)
+        string(REGEX REPLACE "\\..*" "" CURRENT_DATE "${FIRST_FILE}") 
+
+    else()
+    message(FATAL_ERROR "File as-org2info.txt not found. Download last version of it at https://publicdata.caida.org/datasets/as-organizations/ and decomprime it in ${DATA_DIR}")
+    endif()
+else()
+    # Current date string (Format yyyyMM01)
+    string(TIMESTAMP CURRENT_DATE "%Y%m01")
+endif()
+
 
 # path to file
 set(ORG_FILE "${DATA_DIR}/${CURRENT_DATE}.as-org2info.txt")
