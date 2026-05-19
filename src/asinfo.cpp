@@ -254,7 +254,7 @@ bool AsInfo::load_files()
     else
     {
         printf(
-            "Warning: Impossible open file as-rel2 - serial 2\n Using only as-rel - serial 1 "
+            "\nWarning: Impossible open file as-rel2 - serial 2\nUsing only as-rel - serial 1 "
             "file\n");
     }
 
@@ -279,8 +279,8 @@ bool AsInfo::load_files()
     else
     {
         printf(
-            "Warning: Impossible open file as-relv6 file\n Relationship v6 not will inlcude in "
-            "database");
+            "\nWarning: Impossible open file as-relv6 file\nRelationship v6 not will inlcude in "
+            "database\n");
     }
 
     // sorting and decupling as relationship
@@ -312,8 +312,8 @@ bool AsInfo::load_files()
 void AsInfo::ingest()
 {
     std::cout << "Starting prepocess: calculating As Cone and As Relationship...\n";
-    std::cout << "Total Aut: " << autinfov.size() << "\nTotal Org: " << orginfov.size()
-              << "\nTotal Rel: " << asrelv.size();
+    std::cout << "Total Autonomous System: " << autinfov.size() << "\nTotal Organizations: " << orginfov.size()
+              << "\nTotal Relationship: " << asrelv.size();
     analyze_relationships(asrelv, autinfov, asn_to_idx, adj_p2c);
     compute_as_metrics(autinfov, adj_p2c, asn_to_idx, adj_cone);
     aggregate_organizations(orginfov, autinfov, adj_p2c);

@@ -100,13 +100,19 @@ if(MSVC)
     target_link_libraries(asinfo PRIVATE advapi32.lib)
 else()
     # Flags GCC/Clang (POSIX)
-    set_source_files_properties(dep/mdb.c PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-unused-but-set-variable")
+    set_source_files_properties(dep/mdb.c PROPERTIES 
+        COMPILE_FLAGS "-Wno-unused-parameter -Wno-unused-but-set-variable"
+    )
+
     target_compile_options(asinfo PRIVATE 
         -Wall -Wextra
-        $<$<CONFIG:Release>:-O3 -march=native>
-        $<$<CONFIG:Debug>:-g -O0 -fsanitize=address>
+        $<$<CONFIG:Release>:-O3 -march=native -flto -Os>
+        $<$<CONFIG:RelWithDebInfo>:-O2 -g>
+        $<$<CONFIG:Debug>:-g -O0>
+        $<$<CONFIG:ASAN>:-g -O1 -fsanitize=address -fno-omit-frame-pointer>
     )
 endif()
+
 
 # --- DELETE DATABASE ---
 if(DELETE_OLD_DB)
