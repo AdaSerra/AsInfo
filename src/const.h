@@ -20,7 +20,7 @@
 #define REL_FILE_V6_PATH "./dataset/20260401.as-rel.v6-stable.txt"
 #endif
 
-static constexpr uint32_t MAX_ASN = 402352;
+static constexpr uint32_t MAX_ASN = 404380; //https://www.iana.org/assignments/as-numbers/as-numbers.xhtml
 static constexpr size_t MAX_QUERIES_TEST = 1'000'000;
 static constexpr size_t MAX_SIZE_DB = 1024ULL * 1024ULL * 512;
 static constexpr uint8_t MAX_TABLE = 9;
