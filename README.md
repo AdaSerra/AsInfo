@@ -35,17 +35,19 @@ See source files for entire API list.
 The following tests were run with 1,000,000 queries. Thanks to LMDB's architecture, whose B-Tree have a maximum depth of 3 for these datasets, and memory mapping, the engine achieves performance in the millions of operations per second (MLPS).
 
 
-| Test Type             | MLPS |Avg Latency|Match Rate| Description                                                                     |
+| Test Type             | MLPS |Avg Latency (µs) |Match Rate (%)| Description                                                                     |
 |-----------------------|------|-----------|----------|---------------------------------------------------------------------------------| 
-|Simple Lookup          | 3.50-4.25 | ~0.25 µs   | ~30%   | Looks up a random (gen from 0 to ~400k ) ASN in the database to see if it exists|
-|Validation (Best Case) | 6 - 7 | ~0.15 µs   | ~7%    | Check if a given ASN (gen as above) belongs to a specific org_id using a small set of ASNs such as tier1 only, simulating an L1/L2 cache hit|
-|Validation (Worst Case)| 3.5-4.4 | ~0.25 µs   | ~0%      | It performs the same verification as the previous one but using randomly generated pairs from a pool of 100,000 records, forcing a cache missing|
-|Enriched Lookup Join 1:1 | 1.9-2.1 | ~0.5 µs   | ~30%   | In addition to checking whether the ASN exists, it also extracts the associated organization data (OrgInfo) forcing more memory hop|
-|Full Lookup Join 1:N | 1.3-1.5 | ~0.7 µs   | 100.00%  | Given an existing organization (taken from Tier1 set), searches and returns the list of all ASNs belonging to it|
-|Point Lookup           | 2.10 | ~0.45 µs   | ~13.5%   | Check if a random (gen as usual) ASN is part of the Customer Cone of one of the top 200 global ASs by importance|   
+|Simple Lookup          | 3.75 - 8 | ~0.25 - ~0.12     | ~30   | Looks up a random (gen from 0 to ~400k ) ASN in the database to see if it exists|
+|Validation (Best Case) | 6.5 - 11.5   | ~0.15 - 0.09   | ~7   | Check if a given ASN (gen as above) belongs to a specific org_id using a small set of ASNs such as tier1 only, simulating an L1/L2 cache hit|
+|Validation (Worst Case)| 4  - 4.7| ~0.25 - ~0.2    | ~0      | It performs the same verification as the previous one but using randomly generated pairs from a pool of 100,000 records, forcing a cache missing|
+|Enriched Lookup Join 1:1 | 2 - 4.8 | ~0.5 - ~0.2   | ~30   | In addition to checking whether the ASN exists, it also extracts the associated organization data (OrgInfo) forcing more memory hop|
+|Full Lookup Join 1:N | 1.4 - 0.2 | ~0.7 - ~5   | 100  | Given an existing organization (taken from Tier1 set), searches and returns the list of all ASNs belonging to it|
+|Point Lookup           | 2.1 - 5 | ~0.45 - ~0.2  | ~13.5   | Check if a random (gen as usual) ASN is part of the Customer Cone of one of the top 200 global ASs by importance|   
 
 
-(*Machine Test: CPU Intel i7 3.5Gh, L3 4Mb, 16GB RAM, HDD, OS: Windows 10 and Wsl2*)
+(*Machines Test:  
+left CPU Intel i7 3.5 GHz, L3 4Mb, 16GB RAM, HDD, OS: Windows 10 and Wsl2   
+right CPU Amd 5 5 GHz, L3 32Mb, 32GB RAM, HDD, OS: Windows 11*)
 
 A flat array and a more compact data structure (AS and Organization names are stored in fixed-length char arrays of length 80 and 96) would theoretically guarantee a 2/5x speedup, because the footprint would be reduced and the memory jumps would drop from the current 3-6 levels pointer indirection to a direct 1-2 memory offsets, but these results are still already remarkable and would lose the flexibility of LMDB.
 
