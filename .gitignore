@@ -1,0 +1,16 @@
+data*
+*.db
+*.db-lock
+*.exe
+*.obj
+*.pdb
+*.dll
+/build
+/dataset
+/html
+/latex
+/junk
+/CMakeFiles
+/.vscode
+rep.txt
+.clang-format
