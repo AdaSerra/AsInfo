@@ -39,6 +39,10 @@ static constexpr const char* TABLE_ASN_REL = "asn_rel";
 static constexpr const char* TABLE_ASN_P2C = "asn_p2c";
 static constexpr const char* TABLE_ASN_CONE = "asn_cone";
 
+static constexpr const char* AUTHOR = "Adalberto Serra";
+static constexpr const char* VERSION = "0.2.0";
+static constexpr const char* LAST_BUILD = "29-09-2026";
+
 // clique / tier1 AS , first line line of as-rel file
 inline constexpr uint32_t TIER1_ASN[] =  
     {174, 209, 286, 701, 1239, 1299, 2828, 2914, 3257, 3320, 3356, 3491, 5511, 6453, 6461, 6762, 6830, 7018, 12956};

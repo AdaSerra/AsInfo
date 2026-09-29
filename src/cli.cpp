@@ -48,6 +48,45 @@ inline long long check_number(const char* inp)
     return res;
 }
 
+/// @brief Prints the tool usage and documentation
+inline void print_help(const char* prog_name)
+{
+    printf("=========================================================================\n");
+    printf(" ASINFO CLI - BGP Relationship and Network Topology Analysis Tool (CAIDA)\n");
+    printf("=========================================================================\n\n");
+    printf("Use:\n");
+    printf("  %s <Option>\n\n", prog_name);
+    printf("Main options:\n\n");
+    
+  
+    printf("  <ASN>                              Search for metadata of a specific Autonomous System .\n");
+    printf("  -c, --as-cone <ASN>                Performs a BFS to print the entire Customer Cone of the specified ASN..\n");
+    printf("  -n, --as-name <NOME>               Search for all ASNs associated with an AS string or name.\n");
+    printf("  -o, --org <ORG_ID>                 Search for the basic metadata of a specific CAIDA organization..\n");
+    printf("  -of, --org-full <ORG_ID>           Search for the organization and print all ASNs associated with it..\n");
+    printf("  -r, --relationship <ASN1> <ASN2> [REL]\n");
+    printf("                                     Check or validate the BGP commercial agreement between two ASNs.\n");
+    printf("                                     [REL] optional: validates a specific type (C2P=-1, P2P=0, P2C=1).\n\n");
+
+    printf("  -l, --load                         Initiate parsing and bulk import of CAIDA files to populate LMDB database..\n");
+    printf("  -b, --benchmark                    Performs a performance stress test on database reads.\n");
+    printf("  -s, --statistics                   Print internal database statistics (pages, nodes, entries).\n");
+    printf("  -t, --test                         Performs internal structural consistency tests on the database's tables.\n");
+    printf("  -h, --help                         Show this help screen.\n\n");
+
+    printf("Examples:\n\n");
+    printf("  %s 15169                           Info on Google ASN\n", prog_name);
+    printf("  %s -r 1267 15169                   Check the commercial relationship between WindTre and Google.\n", prog_name);
+    printf("  %s -c 20940                        View the Akamai customer cone.\n\n", prog_name);
+
+    printf("About:\n\n");
+    printf("  Version                            %s\n",VERSION);
+    printf("  Last Build                         %s\n",LAST_BUILD);
+    printf("  Author                             %s\n",AUTHOR);
+    printf("  License                            MIT\n\n");
+    printf("=========================================================================\n");
+}
+
 /// @brief main function of cli
 /// @details if not args are passed, default is
 
@@ -67,7 +106,8 @@ int main(int argc, char* argv[])
         QUERY_ORG,
         QUERY_ORG_FULL,
         QUERY_CONE,
-        CHECK_REL
+        CHECK_REL,
+        HELP
     };
     Action current_action = Action::NONE;
 
@@ -122,7 +162,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            std::cerr << "-r requires two ASN: " << argv[0] << "examples: -r 123 456\n";
+            std::cerr << "-r requires two ASN: " << argv[0] << "\nexamples: -r 123 456\n";
             return 1;
         }
     }
@@ -174,6 +214,12 @@ int main(int argc, char* argv[])
             std::cerr << "-c requires an as number\n";
             return 1;
         }
+    }
+    else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
+    {
+        current_action = Action::HELP;
+        print_help(argv[0]);
+        return 0;
     }
     else
     {
