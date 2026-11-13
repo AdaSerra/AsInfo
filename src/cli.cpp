@@ -63,7 +63,8 @@ inline void print_help(const char* prog_name)
     printf("  -c, --as-cone <ASN>                Performs a BFS to print the entire Customer Cone of the specified ASN..\n");
     printf("  -n, --as-name <NOME>               Search for all ASNs associated with an AS string or name.\n");
     printf("  -o, --org <ORG_ID>                 Search for the basic metadata of a specific CAIDA organization..\n");
-    printf("  -of, --org-full <ORG_ID>           Search for the organization and print all ASNs associated with it..\n");
+    printf("  -of, --org-full <ORG_ID>           Search for the organization and print all AS metadata associated with it..\n");
+    printf("  -oa, --org-asn-list <ORG_ID>       Search for the organization and print only ASNs associated with it..\n");
     printf("  -r, --relationship <ASN1> <ASN2> [REL]\n");
     printf("                                     Check or validate the BGP commercial agreement between two ASNs.\n");
     printf("                                     [REL] optional: validates a specific type (C2P=-1, P2P=0, P2C=1).\n\n");
@@ -105,6 +106,7 @@ int main(int argc, char* argv[])
         QUERY_AS_NAME,
         QUERY_ORG,
         QUERY_ORG_FULL,
+        QUERY_ORG_ASN_LIST,   
         QUERY_CONE,
         CHECK_REL,
         HELP
@@ -199,6 +201,18 @@ int main(int argc, char* argv[])
         else
         {
             std::cerr << "-of requires an Organization ID.\n";
+            return 1;
+        }
+    }
+    else if (strcmp(argv[1], "-oa") == 0 || strcmp(argv[1], "--org-asn-list") == 0)
+    {
+        if (argc > 2)
+        {
+            current_action = Action::QUERY_ORG_ASN_LIST;
+        }
+        else
+        {
+            std::cerr << "-oa requires an Organization ID.\n";
             return 1;
         }
     }
@@ -337,6 +351,31 @@ int main(int argc, char* argv[])
             }
             break;
         }
+        case Action::QUERY_ORG_ASN_LIST:
+        {
+            char* up = upper_char(argv[2]);
+            std::vector<AutInfo> asv;
+            OrgInfo* r = ldb.get_org_full(up, asv);
+            if (r)
+            {
+                r->write_org(stdout);
+                if (!asv.empty())
+                {   
+                    putchar('\n');
+                    for (const auto& a : asv) 
+                            printf("%u\n",a.asn);
+                }
+                
+            }
+            
+            else
+            {
+                printf("Organitazion not found\n");
+            }
+
+            break;
+        }
+        
             default:
                 break;
     }

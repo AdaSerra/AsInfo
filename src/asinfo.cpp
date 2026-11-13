@@ -775,7 +775,6 @@ OrgInfo* AsInfo::get_org_full(const char* org_key, std::vector<AutInfo>& asv)
     key.mv_size = strlen(org_key);
     key.mv_data = (void*)org_key;
 
-    
     if (mdb_get(txn, org_info, &key, &data) != 0) return nullptr;
     OrgInfo* res = static_cast<OrgInfo*>(data.mv_data);
 
@@ -783,13 +782,13 @@ OrgInfo* AsInfo::get_org_full(const char* org_key, std::vector<AutInfo>& asv)
     if (mdb_cursor_open(txn, org_to_asn, &m_cur_mapping) != 0) return res;
 
     MDB_val v_asn_id;
-  
+
     int rc = mdb_cursor_get(m_cur_mapping, &key, &v_asn_id, MDB_SET);
 
     while (rc == 0)
     {
         MDB_val data_aut;
-       
+
         if (mdb_get(txn, aut_info, &v_asn_id, &data_aut) == 0)
         {
             asv.push_back(*static_cast<AutInfo*>(data_aut.mv_data));
@@ -800,6 +799,56 @@ OrgInfo* AsInfo::get_org_full(const char* org_key, std::vector<AutInfo>& asv)
 
     mdb_cursor_close(m_cur_mapping);
     return res;
+}
+
+/// @brief Lookup an org_id in org_info table and return all AS Number associated
+/// @param org_key string to use as org_id key
+/// @return return a vector of AS Number
+std::vector<uint32_t> AsInfo::get_org_asn(const char* org_key)
+{
+    std::vector<AutInfo> asv{};
+    std::vector<uint32_t> asnv{};
+    OrgInfo* res = get_org_full(org_key, asv);
+
+    if (!res) return asnv;
+
+    for (const auto& a : asv) 
+        asnv.push_back(a.asn);
+
+    return asnv;
+    
+    // Alternative faster version
+    /*  std::vector<uint32_t> asnv {};
+
+     MDB_val key, data;
+     key.mv_size = strlen(org_key);
+     key.mv_data = (void*)org_key;
+
+
+     if (mdb_get(txn, org_info, &key, &data) != 0) return asnv;
+
+
+     MDB_cursor* m_cur_mapping;
+     if (mdb_cursor_open(txn, org_to_asn, &m_cur_mapping) != 0) return asnv;
+
+     MDB_val v_asn_id;
+
+     int rc = mdb_cursor_get(m_cur_mapping, &key, &v_asn_id, MDB_SET);
+
+     while (rc == 0)
+     {
+         MDB_val data_aut;
+
+         if (mdb_get(txn, aut_info, &v_asn_id, &data_aut) == 0)
+         {
+             AutInfo *ai = static_cast<AutInfo*>(data_aut.mv_data);
+             asnv.push_back(ai -> asn);
+         }
+
+         rc = mdb_cursor_get(m_cur_mapping, &key, &v_asn_id, MDB_NEXT_DUP);
+     }
+
+     mdb_cursor_close(m_cur_mapping); */
 }
 
 bool AsInfo::fast_asn(uint32_t asn_key)

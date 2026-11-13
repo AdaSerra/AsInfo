@@ -1,8 +1,5 @@
 #pragma once
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include <unordered_map>
 #include <vector>
@@ -112,6 +109,9 @@ public:
     // Returns all AutInfo objects matching a specific name (handling collisions)
     std::vector<AutInfo> get_as_name(const char* asname_key);
 
+    // Return all AS numbers of an Org
+    std::vector<uint32_t> get_org_asn(const char* org_key);
+
     // --- Validation & Relationship API ---
     // Checks if an ASN belongs to a specific Organization ID
     bool check_as_org(uint32_t asn_key, const char* expected_org_id); 
@@ -148,13 +148,13 @@ public:
         return check_rel(asn1, asn2, ANY_REL) != NOT_REL;
     };
 
-    // Checks if 'asnc' is a customer of 'asnp'
+    // Checks if AS is a customer of another AS
     inline bool is_customer(uint32_t asnc, uint32_t asnp)
     {
         return check_rel(asnp, asnc, P2C) == P2C;
     }
 
-    // Checks if 'asnp' is a provider for 'asnc'
+    // Checks if AS is a provider for another AS
     inline bool is_provider(uint32_t asnp, uint32_t asnc)
     {
         return check_rel(asnp, asnc, P2C) == P2C;

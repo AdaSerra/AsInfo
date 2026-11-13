@@ -1,8 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 
 #ifndef ORG_FILE_PATH
 #define ORG_FILE_PATH "./dataset/20260401.as-org2info.txt"
@@ -40,8 +38,8 @@ static constexpr const char* TABLE_ASN_P2C = "asn_p2c";
 static constexpr const char* TABLE_ASN_CONE = "asn_cone";
 
 static constexpr const char* AUTHOR = "Adalberto Serra";
-static constexpr const char* VERSION = "0.2.0";
-static constexpr const char* LAST_BUILD = "29-09-2026";
+static constexpr const char* VERSION = "0.3.0";
+static constexpr const char* LAST_BUILD = "13-11-2026";
 
 // clique / tier1 AS , first line line of as-rel file
 inline constexpr uint32_t TIER1_ASN[] =  
